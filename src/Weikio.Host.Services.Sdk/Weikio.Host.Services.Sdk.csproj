@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <IsPackable>true</IsPackable>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Description>.NET SDK for Weik.io Services</Description>
+    <PackageDescription>.NET SDK for Weik.io Services</PackageDescription>
+    <PackageId>Weikio.Host.Services.Sdk</PackageId>
+    <Product>Weikio.Host.Services.Sdk</Product>
+    <AssemblyName>Weikio.Host.Services.Sdk</AssemblyName>
+    <PackageTags>weikio;services;integration</PackageTags>
+    <PackageIcon>logo_256.png</PackageIcon>
+    <Title>.NET SDK for Weik.io Services</Title>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
+    <RepositoryUrl>https://github.com/weikio/services-dotnet</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/weikio/services-dotnet</PackageProjectUrl>    
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Serilog.AspNetCore" Version="8.0.1"/>
+    <PackageReference Include="Serilog.Formatting.Compact" Version="2.0.0"/>
+    <PackageReference Include="NATS.Client" Version="1.1.2"/>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3"/>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />    
+  </ItemGroup>
+  
+</Project>

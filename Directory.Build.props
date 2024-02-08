@@ -8,12 +8,12 @@
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <RepositoryUrl>https://github.com/weikio/</RepositoryUrl>
     <PackageProjectUrl>https://weik.io</PackageProjectUrl>
-    <Copyright>©2022 Weik.io</Copyright>
+    <Copyright>©2024 Weik.io</Copyright>
     <LangVersion>8.0</LangVersion>
   </PropertyGroup>
   
   <ItemGroup>
-    <PackageReference Include="MinVer" Version="2.0.0" PrivateAssets="all" />
+    <PackageReference Include="MinVer" Version="4.3.0" PrivateAssets="all" />
   </ItemGroup>
   
   <ItemGroup>
