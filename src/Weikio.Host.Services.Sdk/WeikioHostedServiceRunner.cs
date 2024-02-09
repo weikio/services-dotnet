@@ -85,12 +85,29 @@ public class WeikioHostedServiceRunner : IHostedService
             _endpointsAndActions.Add((serviceEndpoint, action));
         }
 
+        var serviceMetadata = service.Metadata;
+
+        if (!serviceMetadata.ContainsKey("Weikio-Service-Type"))
+        {
+            serviceMetadata["Weikio-Service-Type"] = "dotnet";
+        }
+
+        if (!serviceMetadata.ContainsKey("Weikio-Service-Type-Version"))
+        {
+            serviceMetadata["Weikio-Service-Type-Version"] = typeof(WeikioService).Assembly.GetName().Version?.ToString() ?? "";
+        }
+
+        if (!serviceMetadata.ContainsKey("Weikio-Service-Type-Version"))
+        {
+            serviceMetadata["Weikio-Service-Hostname"] = Environment.MachineName;
+        }
+
         var natsServiceBuilder = Service.Builder()
             .WithDescription(service.Description)
             .WithConnection(_connection)
             .WithName(service.Name)
             .WithVersion(service.Version)
-            .WithMetadata(service.Metadata);
+            .WithMetadata(serviceMetadata);
 
         foreach (var endpointAndAction in _endpointsAndActions)
         {
