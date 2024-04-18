@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 
 namespace Weikio.Host.Services.Sdk;
 
-public class EndpointMessage(IConnection connection, ServiceMsg msg, ILogger logger)
+public class OperationMessage(IConnection connection, ServiceMsg msg, ILogger logger)
 {
     public ILogger Logger { get; } = logger;
 

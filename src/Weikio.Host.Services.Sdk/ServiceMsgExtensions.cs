@@ -4,14 +4,14 @@ namespace Weikio.Host.Services.Sdk;
 
 public static class ServiceMsgExtensions
 {
-    public static string DataAsString(this EndpointMessage msg)
+    public static string DataAsString(this OperationMessage msg)
     {
         var result = System.Text.Encoding.UTF8.GetString(msg.Data);
 
         return result ?? "";
     }
 
-    public static T DataAsJson<T>(this EndpointMessage msg)
+    public static T DataAsJson<T>(this OperationMessage msg)
     {
         var str = msg.DataAsString();
 

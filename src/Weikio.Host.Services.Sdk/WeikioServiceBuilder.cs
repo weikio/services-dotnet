@@ -14,7 +14,7 @@ public class WeikioServiceBuilder
     private string _name;
     private string _version;
     private Dictionary<string, string> _metadata;
-    private List<Endpoint> _endpoints = new();
+    private List<Operation> _operations = new();
     private Action<IHostBuilder> _configureBuilder;
     private Action<IServiceCollection> _configureServices;
 
@@ -30,27 +30,27 @@ public class WeikioServiceBuilder
         return this;
     }
 
-    public WeikioServiceBuilder WithEndpoint(string name, Action<EndpointMessage> handler,
+    public WeikioServiceBuilder WithOperation(string name, Action<OperationMessage> handler,
         IDictionary<string, string> metadata = default)
     {
-        var func = new Func<EndpointMessage, Task>(ev =>
+        var func = new Func<OperationMessage, Task>(ev =>
         {
             handler(ev);
 
             return Task.CompletedTask;
         });
 
-        WithEndpoint(name, func, metadata);
+        WithOperation(name, func, metadata);
 
         return this;
     }
 
-    public WeikioServiceBuilder WithEndpoint(string name, Func<EndpointMessage, Task> handler,
+    public WeikioServiceBuilder WithOperation(string name, Func<OperationMessage, Task> handler,
         IDictionary<string, string> metadata = default)
     {
-        var endpoint = new Endpoint(name, handler, metadata);
+        var operation = new Operation(name, handler, metadata);
 
-        _endpoints.Add(endpoint);
+        _operations.Add(operation);
 
         return this;
     }
@@ -90,9 +90,9 @@ public class WeikioServiceBuilder
         var weikioService = new WeikioService(_name, _version, _description, _metadata, null, _configureBuilder,
             _configureServices);
 
-        foreach (var endpoint in _endpoints)
+        foreach (var operation in _operations)
         {
-            weikioService.AddEndpoint(endpoint);
+            weikioService.AddOperation(operation);
         }
 
         return weikioService;
@@ -128,24 +128,24 @@ public class WeikioServiceBuilder<T>
 
         foreach (var method in methods)
         {
-            // Check if the method is decorated with the Endpoint attribute
-            var endpointAttribute = method.GetCustomAttributes(typeof(EndpointAttribute), true)
-                .Cast<EndpointAttribute>().FirstOrDefault();
+            // Check if the method is decorated with the Operation attribute
+            var operationAttribute = method.GetCustomAttributes(typeof(OperationAttribute), true)
+                .Cast<OperationAttribute>().FirstOrDefault();
 
-            if (endpointAttribute == null)
+            if (operationAttribute == null)
             {
                 continue;
             }
 
-            var endpointName = endpointAttribute.Name;
-            var endpointMetadata = endpointAttribute.Metadata;
-            var endpointMaxDegreeOfParallelism = endpointAttribute.MaxDegreeOfParallelism;
+            var operationName = operationAttribute.Name;
+            var operationMetadata = operationAttribute.Metadata;
+            var operationMaxDegreeOfParallelism = operationAttribute.MaxDegreeOfParallelism;
 
-            Endpoint EndpointFactory(IServiceProvider provider)
+            Operation OperationFactory(IServiceProvider provider)
             {
                 var runner = provider.GetRequiredService<T>();
 
-                Func<EndpointMessage, Task> handler = null;
+                Func<OperationMessage, Task> handler = null;
 
                 if (typeof(Task).IsAssignableFrom(method.ReturnType))
                 {
@@ -176,12 +176,12 @@ public class WeikioServiceBuilder<T>
                     }
                 }
 
-                var endpoint = new Endpoint(endpointName, handler, endpointMetadata, endpointMaxDegreeOfParallelism);
+                var operation = new Operation(operationName, handler, operationMetadata, operationMaxDegreeOfParallelism);
 
-                return endpoint;
+                return operation;
             }
 
-            weikioService.AddEndpoint(EndpointFactory);
+            weikioService.AddOperation(OperationFactory);
         }
 
         return weikioService;

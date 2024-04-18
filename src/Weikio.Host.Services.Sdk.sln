@@ -2,6 +2,10 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Weikio.Host.Services.Sdk", "Weikio.Host.Services.Sdk\Weikio.Host.Services.Sdk.csproj", "{2E8BF729-E031-4ACA-993C-35073064F777}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "single-operation", "..\samples\single-operation\single-operation.csproj", "{F25C82CD-7B9F-459D-855F-3B3E88EE55D1}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{93879622-D459-49A2-8017-26B7914BC673}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -14,5 +18,12 @@ Global
 		{2E8BF729-E031-4ACA-993C-35073064F777}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2E8BF729-E031-4ACA-993C-35073064F777}.Release|Any CPU.Build.0 = Release|Any CPU
 		{2E8BF729-E031-4ACA-993C-35073064F777}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{F25C82CD-7B9F-459D-855F-3B3E88EE55D1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F25C82CD-7B9F-459D-855F-3B3E88EE55D1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F25C82CD-7B9F-459D-855F-3B3E88EE55D1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F25C82CD-7B9F-459D-855F-3B3E88EE55D1}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{F25C82CD-7B9F-459D-855F-3B3E88EE55D1} = {93879622-D459-49A2-8017-26B7914BC673}
 	EndGlobalSection
 EndGlobal

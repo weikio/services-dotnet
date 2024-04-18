@@ -5,8 +5,8 @@ using System.Threading.Tasks.Dataflow;
 
 namespace Weikio.Host.Services.Sdk;
 
-public record Endpoint(
+public record Operation(
     string Name,
-    Func<EndpointMessage, Task> Handler,
+    Func<OperationMessage, Task> Handler,
     IDictionary<string, string> Metadata = default,
     int MaxDegreeOfParallelism = DataflowBlockOptions.Unbounded);

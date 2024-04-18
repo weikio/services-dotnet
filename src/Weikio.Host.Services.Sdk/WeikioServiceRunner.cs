@@ -69,7 +69,7 @@ public class WeikioServiceRunner
                 weikioService.ConfigureBuilder.Invoke(hostBuilder);
             }
         }
-
+        
         await hostBuilder.RunConsoleAsync();
     }
 }

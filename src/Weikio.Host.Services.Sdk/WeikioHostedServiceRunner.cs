@@ -21,7 +21,7 @@ public class WeikioHostedServiceRunner : IHostedService
     private readonly IServiceProvider _serviceProvider;
     private readonly IConnection _connection;
 
-    private List<(ServiceEndpoint Endpoint, ActionBlock<ServiceMsgHandlerEventArgs> Action)> _endpointsAndActions =
+    private List<(ServiceEndpoint Operation, ActionBlock<ServiceMsgHandlerEventArgs> Action)> _operationsAndActions =
         new();
 
     private readonly Service _natsService;
@@ -33,20 +33,20 @@ public class WeikioHostedServiceRunner : IHostedService
         _service = service;
         _serviceProvider = serviceProvider;
 
-        _connection = serviceProvider.GetRequiredService<NatsConnectionFactory>().Create();
+        _connection = serviceProvider.GetRequiredService<NatsConnectionFactory>().Create(false, (int)TimeSpan.FromSeconds(10).TotalMilliseconds, $"service-{service.Name}/{service.Version}");
         var serviceGroup = new Group($"external.{service.Name}");
 
-        foreach (var endpointFactory in service.Endpoints)
+        foreach (var operationFactory in service.Operations)
         {
-            var endpoint = endpointFactory.Invoke(_serviceProvider);
+            var operation = operationFactory.Invoke(_serviceProvider);
 
             var serilogLogger = new LoggerConfiguration()
                 .Enrich.FromLogContext()
                 .WriteTo.Console()
-                .WriteTo.Sink(new WeikioLogSink(serviceProvider))
+                .WriteTo.Sink(new WeikioLogSink(_connection))
                 .CreateLogger();
 
-            var endpointLogger = new SerilogLoggerFactory(serilogLogger)
+            var operationLogger = new SerilogLoggerFactory(serilogLogger)
                 .CreateLogger<WeikioHostedServiceRunner>();
 
             var action = new ActionBlock<ServiceMsgHandlerEventArgs>(async args =>
@@ -54,15 +54,15 @@ public class WeikioHostedServiceRunner : IHostedService
                     try
                     {
                         _logger.LogDebug(
-                            "Endpoint {Endpoint} from Service {Service} is handling request from Subject {Subject}",
-                            endpoint.Name, service.Name, args.Message.Subject);
+                            "Operation {Operation} from Service {Service} is handling request from Subject {Subject}",
+                            operation.Name, service.Name, args.Message.Subject);
 
                         var originalMsg = args.Message;
-                        var wrappedMsg = new EndpointMessage(_connection, originalMsg, endpointLogger);
+                        var wrappedMsg = new OperationMessage(_connection, originalMsg, operationLogger);
 
                         using (LogContext.Push(new WeikioLogEventEnricher(originalMsg.Header)))
                         {
-                            await endpoint.Handler.Invoke(wrappedMsg);
+                            await operation.Handler.Invoke(wrappedMsg);
                         }
                     }
                     catch (Exception e)
@@ -72,17 +72,17 @@ public class WeikioHostedServiceRunner : IHostedService
                 },
                 new ExecutionDataflowBlockOptions()
                 {
-                    MaxDegreeOfParallelism = endpoint.MaxDegreeOfParallelism
+                    MaxDegreeOfParallelism = operation.MaxDegreeOfParallelism
                 });
 
             var serviceEndpoint = ServiceEndpoint.Builder()
                 .WithGroup(serviceGroup)
-                .WithEndpointName(endpoint.Name)
-                .WithEndpointMetadata(endpoint.Metadata ?? new Dictionary<string, string>())
+                .WithEndpointName(operation.Name)
+                .WithEndpointMetadata(operation.Metadata ?? new Dictionary<string, string>())
                 .WithHandler((s, a) => { action.Post(a); })
                 .Build();
 
-            _endpointsAndActions.Add((serviceEndpoint, action));
+            _operationsAndActions.Add((serviceEndpoint, action));
         }
 
         var natsServiceBuilder = Service.Builder()
@@ -92,10 +92,10 @@ public class WeikioHostedServiceRunner : IHostedService
             .WithVersion(service.Version)
             .WithMetadata(service.Metadata);
 
-        foreach (var endpointAndAction in _endpointsAndActions)
+        foreach (var operationAndAction in _operationsAndActions)
         {
-            var endpoint = endpointAndAction.Endpoint;
-            natsServiceBuilder = natsServiceBuilder.AddServiceEndpoint(endpoint);
+            var operation = operationAndAction.Operation;
+            natsServiceBuilder = natsServiceBuilder.AddServiceEndpoint(operation);
         }
 
         _natsService = natsServiceBuilder.Build();
@@ -103,8 +103,8 @@ public class WeikioHostedServiceRunner : IHostedService
 
     public Task StartAsync(CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Starting Service {ServiceName} with Endpoint Count: {EndpointCount}", _natsService.Name,
-            _endpointsAndActions.Count);
+        _logger.LogInformation("Starting Service {ServiceName} with Operation Count: {OperationCount}", _natsService.Name,
+            _operationsAndActions.Count);
         _natsService.StartService();
 
         return Task.CompletedTask;
@@ -116,12 +116,19 @@ public class WeikioHostedServiceRunner : IHostedService
 
         _natsService.Stop();
 
-        foreach (var endpointsAndAction in _endpointsAndActions)
+        foreach (var operationAndAction in _operationsAndActions)
         {
-            endpointsAndAction.Action.Complete();
-            await endpointsAndAction.Action.Completion;
+            operationAndAction.Action.Complete();
+            await operationAndAction.Action.Completion;
         }
-
-        _connection.Dispose();
+        
+        try
+        {
+            _connection.Dispose();
+        }
+        catch
+        {
+            // ignored
+        }
     }
 }

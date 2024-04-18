@@ -19,7 +19,7 @@ public class WeikioService(
     public string Name { get; } = name;
     public string Version { get; } = version;
     public string Description { get; } = description;
-    public List<Func<IServiceProvider, Endpoint>> Endpoints { get; } = new();
+    public List<Func<IServiceProvider, Operation>> Operations { get; } = new();
     public Dictionary<string, string> Metadata { get; init; } = metadata ?? new();
     public Type ServiceType { get; } = serviceType;
 
@@ -31,34 +31,34 @@ public class WeikioService(
         await WeikioServiceRunner.StartAsync(this);
     }
 
-    public void AddEndpoint(string name, Action<EndpointMessage> handler,
+    public void AddOperation(string name, Action<OperationMessage> handler,
         IDictionary<string, string> metadata = default, int maxDegreeOfParallelism = DataflowBlockOptions.Unbounded)
     {
-        var func = new Func<EndpointMessage, Task>(ev =>
+        var func = new Func<OperationMessage, Task>(ev =>
         {
             handler(ev);
 
             return Task.CompletedTask;
         });
 
-        AddEndpoint(name, func, metadata, maxDegreeOfParallelism);
+        AddOperation(name, func, metadata, maxDegreeOfParallelism);
     }
 
-    public void AddEndpoint(string name, Func<EndpointMessage, Task> handler,
+    public void AddOperation(string name, Func<OperationMessage, Task> handler,
         IDictionary<string, string> metadata = default, int maxDegreeOfParallelism = DataflowBlockOptions.Unbounded)
     {
-        var endpoint = new Endpoint(name, handler, metadata, maxDegreeOfParallelism);
+        var operation = new Operation(name, handler, metadata, maxDegreeOfParallelism);
 
-        AddEndpoint(endpoint);
+        AddOperation(operation);
     }
 
-    public void AddEndpoint(Endpoint endpoint)
+    public void AddOperation(Operation operation)
     {
-        Endpoints.Add(_ => endpoint);
+        Operations.Add(_ => operation);
     }
 
-    public void AddEndpoint(Func<IServiceProvider, Endpoint> endpoint)
+    public void AddOperation(Func<IServiceProvider, Operation> operation)
     {
-        Endpoints.Add(endpoint);
+        Operations.Add(operation);
     }
 }

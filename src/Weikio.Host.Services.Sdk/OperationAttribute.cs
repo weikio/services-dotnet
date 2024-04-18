@@ -5,7 +5,7 @@ using System.Threading.Tasks.Dataflow;
 namespace Weikio.Host.Services.Sdk;
 
 [AttributeUsage(AttributeTargets.Method, Inherited = false, AllowMultiple = false)]
-public sealed class EndpointAttribute(string name) : Attribute
+public sealed class OperationAttribute(string name) : Attribute
 {
     public string Name { get; } = name;
 

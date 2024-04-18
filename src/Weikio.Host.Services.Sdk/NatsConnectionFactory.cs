@@ -19,30 +19,7 @@ namespace Weikio.Host.Services.Sdk
             _configuration = configuration;
         }
 
-        public IConnection Create()
-        {
-            return Create(false);
-        }
-
-        public IConnection Create(int timeout)
-        {
-            return Create(false, timeout);
-        }
-
-        public IConnection Create(bool silent)
-        {
-            var timeout = (int)TimeSpan.FromSeconds(10).TotalMilliseconds;
-            var timeoutFromConfiguration = _configuration["Weikio:Nats:Timeout"];
-
-            if (timeoutFromConfiguration != null)
-            {
-                timeout = int.Parse(timeoutFromConfiguration);
-            }
-
-            return Create(silent, timeout);
-        }
-
-        public IConnection Create(bool silent, int timeout)
+        public IConnection Create(bool silent, int timeout, string name)
         {
             try
             {
@@ -82,7 +59,9 @@ namespace Weikio.Host.Services.Sdk
                 var password = config["Weikio:Nats:Password"];
 
                 opts.Url = string.IsNullOrWhiteSpace(url) ? "nats://localhost:4222" : url;
-
+                opts.MaxReconnect = Options.ReconnectForever;
+                opts.Name = name;
+                
                 if (!string.IsNullOrWhiteSpace(username))
                 {
                     opts.User = username;
